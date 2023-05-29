@@ -60,7 +60,7 @@ public class FormulaCompiler {
         /*
          * Grammar:
          * expression     => factor ( ( "-" | "+" ) factor )* ;
-         * factor         => unary ( ( "/" | "*" ) unary )* ;
+         * factor         => power ( ( "/" | "*" ) power )* ;
          * power         => unary ( "^" unary )* ;
          * unary          => ( "-" ) unary
          *                 | primary ;
@@ -99,17 +99,17 @@ public class FormulaCompiler {
             .Then(static x => MakeGetCellValueFunctionCallExpr(x));
 
         // primary => NUMBER | (CellRef | excelFunctionCallExpression) | "(" expression ")";
-        var primary = OneOf(numberLiteral, cellRef.Or(excelFunctionCallExpression), groupExpression);
+        var primaryExpression = OneOf(numberLiteral, cellRef.Or(excelFunctionCallExpression), groupExpression);
 
         // The Recursive helper allows to create parsers that depend on themselves.
         // ( "-" ) unary | primary;
         var unaryExpression = Recursive<LE.Expression>((u) =>
             minusToken.And(u)
                 .Then<LE.Expression>(static x => LE.Expression.Negate(x.Item2))
-                .Or(primary));
+                .Or(primaryExpression));
 
         // power => unary ( "^" unary )* ;
-        var power = unaryExpression.And(ZeroOrMany(caretToken.And(unaryExpression)))
+        var powerExpression = unaryExpression.And(ZeroOrMany(caretToken.And(unaryExpression)))
             .Then(static x =>
             {
                 // unary
@@ -129,7 +129,7 @@ public class FormulaCompiler {
             });
 
         // factor => unary ( ( "/" | "*" ) unary )* ;
-        var factor = power.And(ZeroOrMany(slashToken.Or(starToken).And(power)))
+        var factorExpression = powerExpression.And(ZeroOrMany(slashToken.Or(starToken).And(powerExpression)))
             .Then(static x =>
             {
                 // unary
@@ -150,7 +150,7 @@ public class FormulaCompiler {
             });
 
         // arithmeticExpression => factor ( ( "-" | "+" ) factor )* ;
-        formulaExpression.Parser = factor.And(ZeroOrMany(plusToken.Or(minusToken).And(factor)))
+        formulaExpression.Parser = factorExpression.And(ZeroOrMany(plusToken.Or(minusToken).And(factorExpression)))
             .Then(static x =>
             {
                 // factor
