@@ -61,6 +61,7 @@ public class FormulaCompiler {
          * Grammar:
          * expression     => factor ( ( "-" | "+" ) factor )* ;
          * factor         => unary ( ( "/" | "*" ) unary )* ;
+         * power         => unary ( "^" unary )* ;
          * unary          => ( "-" ) unary
          *                 | primary ;
          * primary        => NUMBER
@@ -81,6 +82,7 @@ public class FormulaCompiler {
         var leftParenToken = Terms.Char('(');
         var rightParenToken = Terms.Char(')');
         var commaToken = Terms.Char(',');
+        var caretToken = Terms.Char('^');
         var powerToken = Terms.Text("**");
 
         var excelFunctionCallStartToken = SkipWhiteSpace(Literals.Identifier().And(Literals.Char('(')));
@@ -106,8 +108,28 @@ public class FormulaCompiler {
                 .Then<LE.Expression>(static x => LE.Expression.Negate(x.Item2))
                 .Or(primary));
 
+        // power => unary ( "^" unary )* ;
+        var power = unaryExpression.And(ZeroOrMany(caretToken.And(unaryExpression)))
+            .Then(static x =>
+            {
+                // unary
+                var result = x.Item1;
+
+                // (("/" | "*") unary ) *
+                foreach (var op in x.Item2)
+                {
+                    result = op.Item1 switch
+                    {
+                        '^' => LE.Expression.MakeBinary(LE.ExpressionType.Power, result, op.Item2),
+                        _ => null
+                    };
+                }
+
+                return result;
+            });
+
         // factor => unary ( ( "/" | "*" ) unary )* ;
-        var factor = unaryExpression.And(ZeroOrMany(slashToken.Or(starToken).And(unaryExpression)))
+        var factor = power.And(ZeroOrMany(slashToken.Or(starToken).And(power)))
             .Then(static x =>
             {
                 // unary

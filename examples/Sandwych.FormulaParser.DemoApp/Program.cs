@@ -21,7 +21,7 @@ class Program {
         scope.Set("C13", 100.0);
 
        // var exprText = "ADD(0, 1) + 2 * (3 + 1) + A12 * 2 * MIN(0, 2) + SUM(1,2,3,4,5)";
-        var exprText = "ADD(SUM(1.0, 2.0, $A$12), 100.0) + C13";
+        var exprText = "ADD(SUM(1.0, 2.0, $A$12), 100.0) + C13 + 10 ^ 2";
 
         // 自定义函数
         var customFunctions = new (string, Expression)[]
