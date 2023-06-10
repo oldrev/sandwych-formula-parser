@@ -7,10 +7,14 @@ using System.Threading.Tasks;
 
 namespace Sandwych.FormulaParser.DemoApp;
 
+public class SheetColumn : Dictionary<int, CellValue>
+{
+}
+
 /// <summary>
 /// 用于演示的按列组织的数据，其实就是一个稀疏矩阵
 /// </summary>
-public class Sheet : Dictionary<int, Dictionary<int, CellValue>>
+public class Sheet : Dictionary<int, SheetColumn>
 {
     public CellValue this[CellAddress cref]
     {
@@ -28,7 +32,7 @@ public class Sheet : Dictionary<int, Dictionary<int, CellValue>>
             }
             else
             {
-                this[cref.ColumnIndex] = new Dictionary<int, CellValue> { { cref.RowIndex, value } };
+                this[cref.ColumnIndex] = new SheetColumn() { { cref.RowIndex, value } };
             }
         }
     }

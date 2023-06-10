@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace Sandwych.FormulaParser.Model;
 
-public readonly struct Cell
+public struct ValueCell
 {
-    public string Formula { get; }
+    public CellValue Value { get; set; }
 
-    public Cell(string formula)
+    public ValueCell(CellValue cellValue)
     {
-        this.Formula = formula;
+        this.Value = cellValue;
     }
 }
