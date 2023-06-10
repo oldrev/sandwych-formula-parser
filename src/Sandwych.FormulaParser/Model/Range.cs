@@ -6,7 +6,15 @@ using System.Threading.Tasks;
 
 namespace Sandwych.FormulaParser.Model;
 
-public readonly record struct Range(CellRef From, CellRef To)
+public readonly struct Range
 {
+    public CellAddress From { get; }
+    public CellAddress To { get; }
+
+    public Range(CellAddress from, CellAddress to)
+    {
+        this.From = from;
+        this.To = to;
+    }
 
 }

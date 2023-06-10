@@ -8,6 +8,6 @@ namespace Sandwych.FormulaParser.Model;
 
 public interface ISpreadsheetDataProvider
 {
-    CellValue GetCellValue(CellRef cref);
+    CellValue GetCellValue(CellAddress cref);
 
 }

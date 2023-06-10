@@ -19,10 +19,9 @@ public class FormulaCompiler {
     // static readonly ConstructorInfo Scope_New_parent = Scope_Type.GetConstructor(new[] { Scope_Type }) ?? throw new NullReferenceException();
     static readonly LE.ParameterExpression ScopeParameterExpression = LE.Expression.Parameter(Scope_Type, "__scope__");
 
+    static readonly LE.Expression CellValue_GetNumberValueExpression = (CellValue x) => x.NumberValue;
 
-
-
-    private readonly Parser<LE.Expression> s_expressionParser;
+    private readonly Parser<LE.Expression> _compiledExpressionParser;
 
     public IReadOnlyDictionary<string, LE.Expression> Functions => _functions;
 
@@ -39,15 +38,15 @@ public class FormulaCompiler {
         return LE.Expression.Invoke(funcExpr, argsExpr);
     }
 
-    private static LE.Expression MakeGetCellValueFunctionCallExpr(CellRef cellRef) {
+    private static LE.Expression MakeGetCellValueFunctionCallExpr(CellAddress cellRef) {
         var cellRefExpr = LE.Expression.Constant(cellRef);
         var getCellValueCallExpr = LE.Expression.Call(ScopeParameterExpression, Scope_GetCellValue, cellRefExpr);
         return getCellValueCallExpr;
     }
 
-
-
     public FormulaCompiler(IEnumerable<(string, LE.Expression)>? functions = null) {
+
+        // 注册自定义函数
         if (functions != null)
         {
             foreach (var f in functions)
@@ -170,14 +169,14 @@ public class FormulaCompiler {
                 return result;
             });
 
-        var expression = formulaExpression;
+        var expression = formulaExpression.AndSkip(Empty());
 
-        s_expressionParser = expression;
+        _compiledExpressionParser = expression;
     }
 
     public Func<Scope, double> Compile(string exprText) {
         // var assignScope = Expression.Assign(scopeVar, Expression.New(LuaContext_New_parent, Context));
-        var bodyExpr = s_expressionParser.Parse(exprText);
+        var bodyExpr = _compiledExpressionParser.Parse(exprText);
 
         var blockExpr = LE.Expression.Block(typeof(double), bodyExpr);
 

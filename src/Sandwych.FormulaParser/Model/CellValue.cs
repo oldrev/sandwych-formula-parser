@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 namespace Sandwych.FormulaParser.Model;
 
 public enum CellValueType : byte {
+    Empty = 0,
     Number = 1,
     Date,
     Time,
@@ -18,10 +19,54 @@ public struct CellValue : IComparable, IComparable<CellValue>, IEquatable<CellVa
     public static readonly DateOnly ExcelDateStartValue = new DateOnly(1900, 1, 1);
     public static readonly DateTime ExcelDateTimeStartValue = new DateTime(1900, 1, 1);
 
-    private double _doubleValue;
-    private string _textValue;
+    private double _number;
+    private string _text;
 
     private CellValueType _valueType;
+
+    public CellValue()
+    {
+        _valueType = CellValueType.Empty;
+        _number = double.NaN;
+        _text = null!;  
+    }
+
+    public CellValue(string textValue)
+    {
+        _valueType = CellValueType.Number;
+        _number = double.NaN;
+        _text = textValue;
+    }
+
+    public CellValue(double numberValue)
+    {
+        _valueType = CellValueType.Number;
+        _number = numberValue;
+        _text = string.Empty;
+    }
+
+    public CellValue(bool boolValue)
+    {
+        _valueType = CellValueType.Boolean;
+        _number = boolValue ? 1.0 : 0.0;
+        _text = string.Empty;
+    }
+
+    public CellValue(DateTime dateTimeValue)
+    {
+        _valueType = CellValueType.DateTime;
+        var diff = dateTimeValue - ExcelDateTimeStartValue;
+        _number = diff.TotalDays;
+        _text = string.Empty;
+    }
+
+    public CellValue(DateOnly dateValue)
+    {
+        _valueType = CellValueType.Number;
+        var diff = dateValue.DayNumber - ExcelDateStartValue.DayNumber;
+        _number = diff;
+        _text = string.Empty;
+    }
 
     public bool IsBoolean => _valueType == CellValueType.Boolean;
     public bool IsDouble => _valueType == CellValueType.Number;
@@ -37,12 +82,12 @@ public struct CellValue : IComparable, IComparable<CellValue>, IEquatable<CellVa
             {
                 throw new InvalidOperationException("Variant does not contain a bool value.");
             }
-            return (int)Math.Round(_doubleValue) != 0;
+            return (int)Math.Round(_number) != 0;
         }
         set
         {
             _valueType = CellValueType.Boolean;
-            _doubleValue = value ? 1.0 : 0.0;
+            _number = value ? 1.0 : 0.0;
         }
     }
 
@@ -53,12 +98,12 @@ public struct CellValue : IComparable, IComparable<CellValue>, IEquatable<CellVa
             {
                 throw new InvalidOperationException("Variant does not contain a double value.");
             }
-            return _doubleValue;
+            return _number;
         }
         set
         {
             _valueType = CellValueType.Number;
-            _doubleValue = value;
+            _number = value;
         }
     }
 
@@ -69,13 +114,13 @@ public struct CellValue : IComparable, IComparable<CellValue>, IEquatable<CellVa
             {
                 throw new InvalidOperationException("Variant does not contain a double value.");
             }
-            return ExcelDateStartValue.AddDays((int)Math.Ceiling(_doubleValue));
+            return ExcelDateStartValue.AddDays((int)Math.Ceiling(_number));
         }
         set
         {
             _valueType = CellValueType.Number;
             var diff = value.DayNumber - ExcelDateStartValue.DayNumber;
-            _doubleValue = diff;
+            _number = diff;
         }
     }
 
@@ -86,13 +131,13 @@ public struct CellValue : IComparable, IComparable<CellValue>, IEquatable<CellVa
             {
                 throw new InvalidOperationException("Variant does not contain a double value.");
             }
-            return ExcelDateTimeStartValue.AddDays(_doubleValue);
+            return ExcelDateTimeStartValue.AddDays(_number);
         }
         set
         {
             _valueType = CellValueType.Number;
             var diff = value - ExcelDateTimeStartValue;
-            _doubleValue = diff.TotalDays;
+            _number = diff.TotalDays;
         }
     }
 
@@ -103,12 +148,12 @@ public struct CellValue : IComparable, IComparable<CellValue>, IEquatable<CellVa
             {
                 throw new InvalidOperationException("Variant does not contain a string value.");
             }
-            return _textValue;
+            return _text;
         }
         set
         {
             _valueType = CellValueType.Text;
-            _textValue = value;
+            _text = value;
         }
     }
 
@@ -118,7 +163,7 @@ public struct CellValue : IComparable, IComparable<CellValue>, IEquatable<CellVa
             throw new ArgumentException("Different type", nameof(other));
         }
 
-        return this._doubleValue.CompareTo(other._doubleValue);
+        return this._number.CompareTo(other._number);
     }
 
     public int CompareTo(object? value) {

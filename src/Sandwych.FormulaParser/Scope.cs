@@ -7,36 +7,23 @@ using System.Threading.Tasks;
 
 namespace Sandwych.FormulaParser;
 
-/// <summary>
-/// Holds a scope and its variables
-/// </summary>
 public class Scope {
-    readonly Scope _parent;
-    readonly Dictionary<string, object> _variables = new Dictionary<string, object>();
+    readonly Scope? _parent = null;
+    readonly Dictionary<string, object?> _variables = new Dictionary<string, object?>();
 
-    /// <summary>
-    /// Used to create scopes
-    /// </summary>
-    public Scope(Scope parent) {
+    public CellValueHandler? CellValueHandler { get; private set; }
+
+    public Scope(CellValueHandler? cellValueHandler = null, Scope? parent = null)
+    {
+        this.CellValueHandler = cellValueHandler;
         _parent = parent;
     }
 
-    /// <summary>
-    /// Creates a base scope
-    /// </summary>
-    public Scope() : this(null) { }
-
-    /// <summary>
-    /// Sets or creates a variable in the local scope
-    /// </summary>
-    public void SetLocal(string name, object value) {
+    public void SetLocal(string name, object? value) {
         _variables[name] = value;
     }
 
-    /// <summary>
-    /// Sets or creates a variable in the global scope
-    /// </summary>
-    public void SetGlobal(string name, object value) {
+    public void SetGlobal(string name, object? value) {
         if (_parent == null)
         {
             _variables[name] = value;
@@ -47,9 +34,6 @@ public class Scope {
         }
     }
 
-    /// <summary>
-    /// Returns the nearest declared variable value or nil
-    /// </summary>
     public object? Get(string name)
     {
         if (_variables.TryGetValue(name, out var obj))
@@ -70,20 +54,32 @@ public class Scope {
         }
     }
 
-    /// <summary>
-    /// Sets the nearest declared variable or creates a new one
-    /// </summary>
     public void Set(string name, object? value) {
         object? obj = null;
         if (_parent == null || _variables.TryGetValue(name, out obj))
+        {
             _variables[name] = value;
+        }
         else
+        {
             _parent.Set(name, value);
+        }
     }
 
-    public double GetCellValue(CellRef cell)
+    public double GetCellValue(CellAddress cell)
     {
-        return 0;
+        if(this.CellValueHandler != null && this.CellValueHandler(cell, out var childValue))
+        {
+            return childValue.NumberValue;
+        }
+        else if (_parent != null && _parent.CellValueHandler != null && _parent.CellValueHandler(cell, out var parentValue))
+        {
+            return parentValue.NumberValue;
+        }
+        else
+        {
+            return double.NaN;
+        }
     }
 
 

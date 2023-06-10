@@ -54,7 +54,8 @@ public static class Tokens
     // pattern: /[A-Za-z_]+[A-Za-z_0-9.]*\(/
     public static readonly Parser<TextSpan> FunctionCallToken = SkipWhiteSpace(Capture(IdentifierToken.And(Literals.Char('('))));
 
-    public static readonly Parser<CellRef> CellRefToken = SkipWhiteSpace(CellRefLiteral)
-        .Then(x => CellRef.From(x.Item1.Span, x.Item2.Span));
+    public static readonly Parser<CellAddress> CellRefToken = SkipWhiteSpace(CellRefLiteral)
+        .Then(x => CellAddress.From(x.Item1.Span, x.Item2.Span));
 
+    public static readonly Parser<CellAddress> CellRefTokenCompiled = CellRefToken.Compile();
 }

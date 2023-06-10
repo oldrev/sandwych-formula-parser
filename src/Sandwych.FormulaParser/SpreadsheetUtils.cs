@@ -52,7 +52,7 @@ public static class SpreadsheetUtils
     /// <summary>
     /// 不是很快的 26 进制转换
     /// </summary>
-    public static string IndexToColumnReference(int value)
+    public static string? IndexToColumnReference(int value)
     {
         Span<char> buf = stackalloc char[4];
 
