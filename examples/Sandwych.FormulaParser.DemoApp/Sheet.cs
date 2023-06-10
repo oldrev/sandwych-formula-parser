@@ -7,32 +7,40 @@ using System.Threading.Tasks;
 
 namespace Sandwych.FormulaParser.DemoApp;
 
-public class SheetColumn : Dictionary<int, CellValue>
+public class SparseArray<TValue> : Dictionary<int, TValue> { }
+
+public class SheetColumn : SparseArray<CellValue>
 {
 }
 
 /// <summary>
 /// 用于演示的按列组织的数据，其实就是一个稀疏矩阵
 /// </summary>
-public class Sheet : Dictionary<int, SheetColumn>
+public class Sheet : SparseArray<SheetColumn>
 {
     public CellValue this[CellAddress cref]
     {
+        get => this[cref.RowIndex, cref.ColumnIndex];
+        set => this[cref.RowIndex, cref.ColumnIndex] = value;
+    }
+
+    public CellValue this[int rowIndex, int columnIndex]
+    {
         get
         {
-            var rows = this[cref.ColumnIndex];
-            var val = rows[cref.RowIndex];
+            var rows = this[columnIndex];
+            var val = rows[rowIndex];
             return val;
         }
         set
         {
-            if (this.TryGetValue(cref.ColumnIndex, out var rows))
+            if (this.TryGetValue(columnIndex, out var rows))
             {
-                rows[cref.RowIndex] = value;
+                rows[rowIndex] = value;
             }
             else
             {
-                this[cref.ColumnIndex] = new SheetColumn() { { cref.RowIndex, value } };
+                this[columnIndex] = new SheetColumn() { { rowIndex, value } };
             }
         }
     }

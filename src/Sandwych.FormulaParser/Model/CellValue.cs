@@ -19,6 +19,8 @@ public struct CellValue : IComparable, IComparable<CellValue>, IEquatable<CellVa
     public static readonly DateOnly ExcelDateStartValue = new DateOnly(1900, 1, 1);
     public static readonly DateTime ExcelDateTimeStartValue = new DateTime(1900, 1, 1);
 
+    public static readonly CellValue Empty = new CellValue();
+
     private double _number;
     private string _text;
 
@@ -68,6 +70,7 @@ public struct CellValue : IComparable, IComparable<CellValue>, IEquatable<CellVa
         _text = string.Empty;
     }
 
+    public bool IsEmpty => _valueType == CellValueType.Empty;
     public bool IsBoolean => _valueType == CellValueType.Boolean;
     public bool IsDouble => _valueType == CellValueType.Number;
     public bool IsText => _valueType == CellValueType.Text;
