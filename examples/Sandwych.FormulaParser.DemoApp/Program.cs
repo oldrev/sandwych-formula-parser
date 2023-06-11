@@ -23,6 +23,7 @@ class Program {
         {
             ("ADDALL", (IEnumerable<double> args) => args.Aggregate((x, y) => x + y)),
             ("SUM", (IEnumerable<double> args) => args.Sum()),
+            ("AVG", (IEnumerable<double> args) => args.Average()),
             ("MAX", (IEnumerable<double> args) => args.Max()),
             ("MIN", (IEnumerable<double> args) => args.Min()),
         };
