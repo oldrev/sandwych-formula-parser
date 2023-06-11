@@ -69,9 +69,8 @@ Console.WriteLine($"{exprText} = {result}");
 
 ## Contributing
 
-Contributions are welcome! If you find any bugs or would like to suggest new features, please create an issue or submit a pull request on the [GitHub repository](
-
-https://github.com/oldrev/Sandwych.FormulaParser).
+Contributions are welcome! If you find any bugs or would like to suggest new features, please create an issue or submit a pull request on the 
+[GitHub repository](https://github.com/oldrev/Sandwych.FormulaParser).
 
 ## License
 
